@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "TheQtCompany.qt-cpp",
+        "TheQtCompany.qt-qml"
+    ]
+}

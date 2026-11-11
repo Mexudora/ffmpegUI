@@ -1,0 +1,25 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "local-debug",
+            "displayName": "Local Qt 6.9.3 — Debug",
+            "inherits": "qt-debug",
+            "cacheVariables": {
+                "CMAKE_PREFIX_PATH": "C:/Qt/Qt693/6.9.3/msvc2022_64"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "local-debug",
+            "configurePreset": "local-debug",
+            "targets": ["ffmpegui"]
+        },
+        {
+            "name": "local-update-translations",
+            "configurePreset": "local-debug",
+            "targets": ["update_translations"]
+        }
+    ]
+}

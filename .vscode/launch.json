@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "ffmpegUI — Debug MSVC",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "externalConsole": false,
+            "environment": [
+                {
+                    "name": "PATH",
+                    "value": "C:/Qt/Qt693/6.9.3/msvc2022_64/bin;${env:PATH}"
+                }
+            ]
+        }
+    ]
+}

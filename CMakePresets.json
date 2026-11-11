@@ -1,0 +1,58 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 21,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_PREFIX_PATH": "$enc",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "qt-debug",
+            "displayName": "Qt 6.9.3 - Debug",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "qt-release",
+            "displayName": "Qt 6.9.3 - Release",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "qt-debug",
+            "configurePreset": "qt-debug",
+            "targets": ["ffmpegui"]
+        },
+        {
+            "name": "qt-release",
+            "configurePreset": "qt-release",
+            "targets": ["ffmpegui"]
+        },
+        {
+            "name": "update-translations",
+            "configurePreset": "qt-debug",
+            "targets": ["update_translations"]
+        },
+        {
+            "name": "release-translations",
+            "configurePreset": "qt-debug",
+            "targets": ["release_translations"]
+        }
+    ]
+}
