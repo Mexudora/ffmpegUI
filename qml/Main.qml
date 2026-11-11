@@ -80,6 +80,8 @@ ApplicationWindow {
             TextField {
                 id: executableField
                 Layout.fillWidth: true
+                // Development default; the user can still select another installation.
+                text: "C:/ffmpeg/bin/ffprobe.exe"
                 placeholderText: qsTr("For example: C:/FFmpeg/bin/ffprobe.exe")
                 enabled: !mediaProbe.busy
                 selectByMouse: true
@@ -129,6 +131,13 @@ ApplicationWindow {
                 textFormat: Text.PlainText
                 color: "#b3261e"
                 wrapMode: Text.WrapAnywhere
+            }
+
+            ConversionForm {
+                Layout.fillWidth: true
+                visible: mediaProbe.metadata.format !== undefined
+                enabled: !mediaProbe.busy
+                inputFile: window.selectedMediaFile
             }
 
             ColumnLayout {

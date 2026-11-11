@@ -31,15 +31,20 @@ target_include_directories(ffmpegui PRIVATE
 # qml и ресурсы
 set_source_files_properties(qml/Main.qml PROPERTIES
     QT_RESOURCE_ALIAS Main.qml)
+set_source_files_properties(qml/ConversionForm.qml PROPERTIES
+    QT_RESOURCE_ALIAS ConversionForm.qml)
 qt_add_qml_module(ffmpegui
     URI FFmpegUI
     VERSION 1.0
     RESOURCE_PREFIX /qt/qml
     QML_FILES
         qml/Main.qml
+        qml/ConversionForm.qml
     SOURCES
         src/mediaprobe.h
-        src/mediaprobe.cpp)
+        src/conversioncommand.h
+        src/mediaprobe.cpp
+        src/conversioncommand.cpp)
 
 # перевод
 qt_add_translations(
