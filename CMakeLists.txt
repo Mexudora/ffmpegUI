@@ -25,6 +25,8 @@ set_target_properties(ffmpegui PROPERTIES
 # подключение библиотек
 target_link_libraries(ffmpegui PRIVATE
     Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2)
+target_include_directories(ffmpegui PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # qml и ресурсы
 set_source_files_properties(qml/Main.qml PROPERTIES
@@ -33,7 +35,11 @@ qt_add_qml_module(ffmpegui
     URI FFmpegUI
     VERSION 1.0
     RESOURCE_PREFIX /qt/qml
-    QML_FILES qml/Main.qml)
+    QML_FILES
+        qml/Main.qml
+    SOURCES
+        src/mediaprobe.h
+        src/mediaprobe.cpp)
 
 # перевод
 qt_add_translations(
