@@ -46,6 +46,8 @@ QString ConversionJob::validationError() const
         if (stream.inputSpecifier.isEmpty())
             return tr("A stream selector is missing.");
         if (stream.type == QStringLiteral("video")) {
+            if (stream.attachedPicture && stream.codec != QStringLiteral("copy"))
+                return tr("Cover art supports stream copying only in this version.");
             if (stream.codec != QStringLiteral("copy") && stream.codec != QStringLiteral("libx264"))
                 return tr("Unsupported video mode.");
         } else if (stream.type == QStringLiteral("audio")) {
@@ -53,6 +55,29 @@ QString ConversionJob::validationError() const
                 return tr("Unsupported audio mode.");
             if (stream.codec != QStringLiteral("copy") && stream.bitrateKbps <= 0)
                 return tr("Audio bitrate must be positive.");
+        } else if (stream.type == QStringLiteral("subtitle")) {
+            if (stream.codec != QStringLiteral("copy") && !textSubtitle(stream.sourceCodec))
+                return tr("This subtitle cannot be converted to text. Disable it or use compatible stream copying.");
+            if (container == QStringLiteral("mp4")) {
+                if (stream.codec != QStringLiteral("mov_text") && stream.codec != QStringLiteral("copy"))
+                    return tr("MP4 subtitles require mov_text in this version.");
+                if (stream.codec == QStringLiteral("copy") && stream.sourceCodec != QStringLiteral("mov_text"))
+                    return tr("MP4 can copy only mov_text subtitles here. Convert, choose MKV or disable the stream.");
+            } else {
+                if (stream.codec != QStringLiteral("copy") && stream.codec != QStringLiteral("srt"))
+                    return tr("Choose subtitle copying or SRT for MKV.");
+                if (stream.codec == QStringLiteral("copy") && stream.sourceCodec == QStringLiteral("mov_text"))
+                    return tr("Convert mov_text subtitles to SRT for MKV.");
+                const QStringList copyCodecs {
+                    QStringLiteral("subrip"), QStringLiteral("srt"), QStringLiteral("ass"),
+                    QStringLiteral("ssa"), QStringLiteral("webvtt"), QStringLiteral("text"),
+                    QStringLiteral("dvd_subtitle"), QStringLiteral("dvb_subtitle"),
+                    QStringLiteral("hdmv_pgs_subtitle"), QStringLiteral("hdmv_text_subtitle"),
+                    QStringLiteral("arib_caption")
+                };
+                if (stream.codec == QStringLiteral("copy") && !copyCodecs.contains(stream.sourceCodec))
+                    return tr("This subtitle codec is not enabled for MKV copying. Convert a supported text subtitle or disable it.");
+            }
         } else {
             return tr("This stream type is not supported yet.");
         }
@@ -73,21 +98,57 @@ QStringList ConversionJob::arguments() const
     for (const StreamSettings &stream : streams)
         result << QStringLiteral("-map") << stream.inputSpecifier;
 
-    int videoIndex = 0;
-    int audioIndex = 0;
+    int videoIndex = 0, audioIndex = 0, subtitleIndex = 0;
     for (const StreamSettings &stream : streams) {
-        if (stream.type == QStringLiteral("video")) {
-            result << QStringLiteral("-c:v:%1").arg(videoIndex++) << stream.codec;
-        } else if (stream.type == QStringLiteral("audio")) {
-            const QString index = QString::number(audioIndex++);
-            result << QStringLiteral("-c:a:") + index << stream.codec;
-            if (stream.codec != QStringLiteral("copy"))
-                result << QStringLiteral("-b:a:") + index
-                       << QString::number(stream.bitrateKbps) + QLatin1Char('k');
-        }
+        QString spec;
+        if (stream.type == QStringLiteral("video"))
+            spec = QStringLiteral("v:%1").arg(videoIndex++);
+        else if (stream.type == QStringLiteral("audio"))
+            spec = QStringLiteral("a:%1").arg(audioIndex++);
+        else if (stream.type == QStringLiteral("subtitle"))
+            spec = QStringLiteral("s:%1").arg(subtitleIndex++);
+        else
+            continue;
+        result << QStringLiteral("-c:") + spec << stream.codec;
+        if (stream.type == QStringLiteral("audio") && stream.codec != QStringLiteral("copy"))
+            result << QStringLiteral("-b:") + spec
+                   << QString::number(stream.bitrateKbps) + QLatin1Char('k');
+        if (!stream.title.isEmpty())
+            result << QStringLiteral("-metadata:s:") + spec << QStringLiteral("title=") + stream.title;
+        if (!stream.language.isEmpty())
+            result << QStringLiteral("-metadata:s:") + spec << QStringLiteral("language=") + stream.language;
+        QStringList dispositions;
+        if (stream.defaultDisposition) dispositions << QStringLiteral("default");
+        if (stream.forcedDisposition) dispositions << QStringLiteral("forced");
+        if (stream.attachedPicture) dispositions << QStringLiteral("attached_pic");
+        // Legacy draft selectors are optional and do not carry source dispositions.
+        if (!stream.sourceCodec.isEmpty())
+            result << QStringLiteral("-disposition:") + spec
+                   << (dispositions.isEmpty() ? QStringLiteral("0") : dispositions.join(QLatin1Char('+')));
     }
     result << QStringLiteral("-f")
            << (container == QStringLiteral("mkv") ? QStringLiteral("matroska") : QStringLiteral("mp4"))
            << outputPath;
     return result;
+}
+
+bool ConversionJob::textSubtitle(const QString &codec)
+{
+    return QStringList {QStringLiteral("subrip"), QStringLiteral("srt"),
+        QStringLiteral("ass"), QStringLiteral("ssa"), QStringLiteral("webvtt"),
+        QStringLiteral("mov_text"), QStringLiteral("text")}.contains(codec);
+}
+
+QString ConversionJob::preview() const
+{
+    auto quote = [](QString value) {
+        value.replace(QStringLiteral("'"), QStringLiteral("''"));
+        for (const QChar mark : {QChar(0x2018), QChar(0x2019)})
+            value.replace(mark, QString(2, mark));
+        return QStringLiteral("'") + value + QStringLiteral("'");
+    };
+    QStringList tokens {quote(program)};
+    for (const QString &argument : arguments())
+        tokens.append(quote(argument));
+    return QStringLiteral("& ") + tokens.join(QLatin1Char(' '));
 }

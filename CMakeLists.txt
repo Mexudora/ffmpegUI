@@ -35,6 +35,13 @@ set_source_files_properties(qml/ConversionForm.qml PROPERTIES
     QT_RESOURCE_ALIAS ConversionForm.qml)
 set_source_files_properties(qml/QueuePanel.qml PROPERTIES
     QT_RESOURCE_ALIAS QueuePanel.qml)
+set_source_files_properties(qml/MatrixPanel.qml PROPERTIES
+    QT_RESOURCE_ALIAS MatrixPanel.qml)
+set_source_files_properties(qml/InspectorPanel.qml PROPERTIES
+    QT_RESOURCE_ALIAS InspectorPanel.qml)
+set_source_files_properties(qml/CommandPreviewWindow.qml PROPERTIES
+    QT_RESOURCE_ALIAS CommandPreviewWindow.qml)
+
 qt_add_qml_module(ffmpegui
     URI FFmpegUI
     VERSION 1.0
@@ -43,17 +50,23 @@ qt_add_qml_module(ffmpegui
         qml/Main.qml
         qml/ConversionForm.qml
         qml/QueuePanel.qml
+        qml/InspectorPanel.qml
+        qml/CommandPreviewWindow.qml
+        qml/MatrixPanel.qml
     SOURCES
         src/mediaprobe.h
         src/conversioncommand.h
         src/conversionrunner.h
         src/conversionjob.h
         src/conversionqueue.h
+        src/mediaworkspace.h
         src/mediaprobe.cpp
         src/conversioncommand.cpp
         src/conversionrunner.cpp
         src/conversionjob.cpp
-        src/conversionqueue.cpp)
+        src/conversionqueue.cpp
+        src/mediaworkspace.cpp
+)
 
 # перевод
 qt_add_translations(

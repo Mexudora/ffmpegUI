@@ -71,6 +71,34 @@
             <source>Sample rate: %1 Hz; channels: %2</source>
             <translation>Частота дискретизации: %1 Гц; каналов: %2</translation>
         </message>
+        <message>
+            <source>Add directory</source>
+            <translation>Добавить каталог</translation>
+        </message>
+        <message>
+            <source>Add files</source>
+            <translation>Добавить файлы</translation>
+        </message>
+        <message>
+            <source>Add files from a directory</source>
+            <translation>Добавить файлы из каталога</translation>
+        </message>
+        <message>
+            <source>Add files to preparation</source>
+            <translation>Добавить файлы в подготовку</translation>
+        </message>
+        <message>
+            <source>Analyzing files…</source>
+            <translation>Анализ файлов…</translation>
+        </message>
+        <message>
+            <source>Open</source>
+            <translation>Открыть</translation>
+        </message>
+        <message>
+            <source>Open a file for inspection</source>
+            <translation>Открыть файл для просмотра</translation>
+        </message>
     </context>
     <context>
         <name>main</name>
@@ -389,6 +417,34 @@
             <source>Unsupported video mode.</source>
             <translation>Неподдерживаемый режим видео.</translation>
         </message>
+        <message>
+            <source>Choose subtitle copying or SRT for MKV.</source>
+            <translation>Для MKV выберите копирование субтитров или SRT.</translation>
+        </message>
+        <message>
+            <source>Convert mov_text subtitles to SRT for MKV.</source>
+            <translation>Для MKV преобразуйте субтитры mov_text в SRT.</translation>
+        </message>
+        <message>
+            <source>Cover art supports stream copying only in this version.</source>
+            <translation>В этой версии для обложек доступно только копирование.</translation>
+        </message>
+        <message>
+            <source>MP4 can copy only mov_text subtitles here. Convert, choose MKV or disable the stream.</source>
+            <translation>Для MP4 здесь можно копировать только mov_text. Выберите преобразование, MKV или отключите дорожку.</translation>
+        </message>
+        <message>
+            <source>MP4 subtitles require mov_text in this version.</source>
+            <translation>В этой версии для субтитров MP4 требуется mov_text.</translation>
+        </message>
+        <message>
+            <source>This subtitle cannot be converted to text. Disable it or use compatible stream copying.</source>
+            <translation>Эти субтитры нельзя преобразовать в текст. Отключите их или выберите совместимое копирование.</translation>
+        </message>
+        <message>
+            <source>This subtitle codec is not enabled for MKV copying. Convert a supported text subtitle or disable it.</source>
+            <translation>Копирование этого кодека субтитров в MKV не включено. Преобразуйте поддерживаемые текстовые субтитры или отключите их.</translation>
+        </message>
     </context>
     <context>
         <name>ConversionQueue</name>
@@ -458,6 +514,238 @@
         <message>
             <source>The queue will stop after the current job.</source>
             <translation>Очередь остановится после текущего задания.</translation>
+        </message>
+        <message>
+            <source>2. Conversion queue</source>
+            <translation>2. Очередь конвертации</translation>
+        </message>
+    </context>
+    <context>
+        <name>MediaWorkspace</name>
+        <message>
+            <source> (cover art)</source>
+            <translation> (обложка)</translation>
+        </message>
+        <message>
+            <source>%1 %2</source>
+            <translation>%1 %2</translation>
+        </message>
+        <message>
+            <source>&lt;output file&gt;</source>
+            <translation>&lt;выходной файл&gt;</translation>
+        </message>
+        <message>
+            <source>Add files to the preparation set first.</source>
+            <translation>Сначала добавьте файлы в набор подготовки.</translation>
+        </message>
+        <message>
+            <source>Add this file to the preparation set first.</source>
+            <translation>Сначала добавьте этот файл в набор подготовки.</translation>
+        </message>
+        <message>
+            <source>Audio</source>
+            <translation>Аудио</translation>
+        </message>
+        <message>
+            <source>Choose a local file.</source>
+            <translation>Выберите локальный файл.</translation>
+        </message>
+        <message>
+            <source>Choose an existing local directory.</source>
+            <translation>Выберите существующий локальный каталог.</translation>
+        </message>
+        <message>
+            <source>Choose an output directory or file.</source>
+            <translation>Укажите выходной каталог или файл.</translation>
+        </message>
+        <message>
+            <source>Copy</source>
+            <translation>Копировать</translation>
+        </message>
+        <message>
+            <source>Files added: %1.</source>
+            <translation>Добавлено файлов: %1.</translation>
+        </message>
+        <message>
+            <source>Jobs added to queue: %1.</source>
+            <translation>Добавлено заданий в очередь: %1.</translation>
+        </message>
+        <message>
+            <source>Matched by type, language and order</source>
+            <translation>Сопоставлено по типу, языку и порядку</translation>
+        </message>
+        <message>
+            <source>No media candidates were found in this directory.</source>
+            <translation>В этом каталоге не найдены подходящие медиафайлы.</translation>
+        </message>
+        <message>
+            <source>No streams are selected for this file.</source>
+            <translation>Для этого файла не выбраны дорожки.</translation>
+        </message>
+        <message>
+            <source>Only local files can be added.</source>
+            <translation>Можно добавлять только локальные файлы.</translation>
+        </message>
+        <message>
+            <source>Remove or fix files whose analysis failed.</source>
+            <translation>Удалите или исправьте файлы с ошибкой анализа.</translation>
+        </message>
+        <message>
+            <source>Subtitles</source>
+            <translation>Субтитры</translation>
+        </message>
+        <message>
+            <source>The output directory does not exist.</source>
+            <translation>Выходной каталог не существует.</translation>
+        </message>
+        <message>
+            <source>Video</source>
+            <translation>Видео</translation>
+        </message>
+        <message>
+            <source>Wait for successful file analysis.</source>
+            <translation>Дождитесь успешного анализа файла.</translation>
+        </message>
+        <message>
+            <source>Wait until file analysis has finished.</source>
+            <translation>Дождитесь окончания анализа файлов.</translation>
+        </message>
+    </context>
+    <context>
+        <name>InspectorPanel</name>
+        <message>
+            <source>1. File information</source>
+            <translation>1. Информация о файле</translation>
+        </message>
+        <message>
+            <source>Add preview to preparation</source>
+            <translation>Добавить просматриваемый файл в набор</translation>
+        </message>
+        <message>
+            <source>Analyzing file…</source>
+            <translation>Анализ файла…</translation>
+        </message>
+        <message>
+            <source>Container: %1; duration: %2 s</source>
+            <translation>Контейнер: %1; длительность: %2 с</translation>
+        </message>
+        <message>
+            <source>Open a file from the top toolbar</source>
+            <translation>Откройте файл через верхнюю панель</translation>
+        </message>
+        <message>
+            <source>Preview / choose a prepared file</source>
+            <translation>Просмотр / выберите файл набора</translation>
+        </message>
+        <message>
+            <source>Resolution: %1 × %2; frame rate: %3</source>
+            <translation>Разрешение: %1 × %2; частота кадров: %3</translation>
+        </message>
+        <message>
+            <source>Sample rate: %1 Hz; channels: %2</source>
+            <translation>Частота дискретизации: %1 Гц; каналов: %2</translation>
+        </message>
+        <message>
+            <source>Stream 0:%1 — %2 — %3</source>
+            <translation>Поток 0:%1 — %2 — %3</translation>
+        </message>
+        <message>
+            <source>Title: %1; language: %2</source>
+            <translation>Название: %1; язык: %2</translation>
+        </message>
+        <message>
+            <source>Unknown</source>
+            <translation>Неизвестно</translation>
+        </message>
+    </context>
+    <context>
+        <name>MatrixPanel</name>
+        <message>
+            <source>3. Tracks and conversion settings</source>
+            <translation>3. Дорожки и параметры конвертации</translation>
+        </message>
+        <message>
+            <source>Add files to prepare conversion jobs</source>
+            <translation>Добавьте файлы для подготовки заданий</translation>
+        </message>
+        <message>
+            <source>Add set to queue</source>
+            <translation>Добавить набор в очередь</translation>
+        </message>
+        <message>
+            <source>Analyzing…</source>
+            <translation>Анализ…</translation>
+        </message>
+        <message>
+            <source>Audio bitrate, kbit/s</source>
+            <translation>Битрейт аудио, кбит/с</translation>
+        </message>
+        <message>
+            <source>Choose output directory</source>
+            <translation>Выберите выходной каталог</translation>
+        </message>
+        <message>
+            <source>Choose output file</source>
+            <translation>Выберите выходной файл</translation>
+        </message>
+        <message>
+            <source>Choose…</source>
+            <translation>Выбрать…</translation>
+        </message>
+        <message>
+            <source>Clear preparation</source>
+            <translation>Очистить набор</translation>
+        </message>
+        <message>
+            <source>Container</source>
+            <translation>Контейнер</translation>
+        </message>
+        <message>
+            <source>Directory</source>
+            <translation>Каталог</translation>
+        </message>
+        <message>
+            <source>File</source>
+            <translation>Файл</translation>
+        </message>
+        <message>
+            <source>Files: %1</source>
+            <translation>Файлов: %1</translation>
+        </message>
+        <message>
+            <source>Output directory or file; leave empty to choose a directory</source>
+            <translation>Выходной каталог или файл; пустое поле откроет выбор каталога</translation>
+        </message>
+        <message>
+            <source>Shared settings for each track row</source>
+            <translation>Общие параметры строк дорожек</translation>
+        </message>
+        <message>
+            <source>Stream 0:%1 — %2</source>
+            <translation>Поток 0:%1 — %2</translation>
+        </message>
+        <message>
+            <source>View command</source>
+            <translation>Посмотреть команду</translation>
+        </message>
+    </context>
+    <context>
+        <name>CommandPreviewWindow</name>
+        <message>
+            <source>An unset destination is shown as &lt;output file&gt;. This is a preview, not a command to execute yet.</source>
+            <translation>Если выход не задан, показана метка &lt;выходной файл&gt;. Это предварительный просмотр команды.</translation>
+        </message>
+        <message>
+            <source>Close</source>
+            <translation>Закрыть</translation>
+        </message>
+        <message>
+            <source>Copy</source>
+            <translation>Копировать</translation>
+        </message>
+        <message>
+            <source>FFmpeg command — PowerShell</source>
+            <translation>Команда FFmpeg — PowerShell</translation>
         </message>
     </context>
 </TS>

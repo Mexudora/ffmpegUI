@@ -1,6 +1,7 @@
 #include "conversionqueue.h"
 
 #include <QTimer>
+#include <QSet>
 #include <QUuid>
 
 ConversionQueue::ConversionQueue(QObject *parent)
@@ -88,26 +89,50 @@ bool ConversionQueue::enqueue(ConversionCommand *command, double durationSeconds
         return false;
     }
 
-    ConversionJob job = command->createJob(durationSeconds);
-    const QString outputKey = ConversionJob::pathKey(job.outputPath);
-    for (const Entry &entry : m_entries) {
-        if (!terminal(entry.state) && ConversionJob::pathKey(entry.job.outputPath) == outputKey) {
-            m_error = tr("A waiting or running job already uses this output path.");
+    return enqueueJobs({command->createJob(durationSeconds)});
+}
+
+bool ConversionQueue::enqueueJobs(const QList<ConversionJob> &jobs)
+{
+    m_error.clear();
+    if (jobs.isEmpty()) {
+        m_error = tr("Add at least one waiting job.");
+        emit queueChanged();
+        return false;
+    }
+    QSet<QString> outputs;
+    for (const Entry &entry : m_entries)
+        if (!terminal(entry.state))
+            outputs.insert(ConversionJob::pathKey(entry.job.outputPath));
+    QList<Entry> prepared;
+    for (ConversionJob job : jobs) {
+        const QString reason = job.validationError();
+        if (!reason.isEmpty()) {
+            m_error = job.inputPath + QStringLiteral("\n") + reason;
             emit queueChanged();
             return false;
         }
+        const QString key = ConversionJob::pathKey(job.outputPath);
+        if (outputs.contains(key)) {
+            m_error = tr("A waiting or running job already uses this output path.")
+                + QStringLiteral("\n") + job.outputPath;
+            emit queueChanged();
+            return false;
+        }
+        outputs.insert(key);
+        job.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        Entry entry;
+        entry.job = job;
+        entry.status = tr("Waiting.");
+        prepared.append(entry);
     }
-
-    job.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
-    Entry entry;
-    entry.job = job;
-    entry.status = tr("Waiting.");
-    const int row = count();
-    beginInsertRows(QModelIndex(), row, row);
-    m_entries.append(entry);
+    // Commit only after every item and every destination passed validation.
+    const int first = count();
+    beginInsertRows(QModelIndex(), first, first + int(prepared.size()) - 1);
+    m_entries.append(prepared);
     endInsertRows();
     if (m_selectedId.isEmpty()) {
-        m_selectedId = job.id;
+        m_selectedId = prepared.first().job.id;
         emit detailsChanged();
     }
     emit queueChanged();

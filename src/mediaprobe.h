@@ -38,6 +38,7 @@ signals:
     void errorChanged();
     void sourcePathChanged();
     void metadataChanged();
+    void completed(bool success);
 
 private:
     void setBusy(bool busy);

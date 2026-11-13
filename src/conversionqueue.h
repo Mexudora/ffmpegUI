@@ -44,6 +44,7 @@ public:
     QString error() const;
     QString selectedLog() const;
     ConversionRunner *runner();
+    bool enqueueJobs(const QList<ConversionJob> &jobs);
 
     Q_INVOKABLE bool enqueue(ConversionCommand *command, double durationSeconds);
     Q_INVOKABLE void start();

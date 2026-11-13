@@ -12,6 +12,12 @@ struct StreamSettings
     QString inputSpecifier;
     QString codec;
     int bitrateKbps = 0;
+    QString sourceCodec;
+    QString title;
+    QString language;
+    bool defaultDisposition = false;
+    bool forcedDisposition = false;
+    bool attachedPicture = false;
 };
 
 // A value snapshot: the queue owns its copy and does not expose mutable fields.
@@ -30,5 +36,7 @@ public:
 
     QString validationError() const;
     QStringList arguments() const;
+    QString preview() const;
+    static bool textSubtitle(const QString &codec);
     static QString pathKey(const QString &path);
 };

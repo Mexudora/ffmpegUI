@@ -6,19 +6,15 @@ import FFmpegUI
 
 ApplicationWindow {
     id: window
-
-    width: 960
-    height: 640
-    minimumWidth: 640
-    minimumHeight: 480
+    width: 1500
+    height: 1000
+    minimumWidth: 1080
+    minimumHeight: 800
     visible: true
     title: qsTr("ffmpegUI")
 
-    property url selectedMediaFile
-
-    ConversionQueue {
-        id: conversionQueue
-    }
+    MediaWorkspace { id: workspaceModel }
+    ConversionQueue { id: conversionQueue }
 
     onClosing: function(close) {
         if (conversionQueue.running || conversionQueue.busy) {
@@ -28,211 +24,79 @@ ApplicationWindow {
         }
     }
 
-    function valueOrUnknown(value) {
-        return value === undefined || value === null || value === ""
-                ? qsTr("Unknown") : String(value)
-    }
-
-    function durationText(value) {
-        const seconds = Number(value)
-        if (value === undefined || value === null || value === ""
-                || !isFinite(seconds) || seconds < 0)
-            return qsTr("Unknown")
-        return qsTr("%1 s").arg(seconds.toFixed(3))
-    }
-
-    function frameRateText(value) {
-        if (typeof value !== "string")
-            return qsTr("Unknown")
-        const parts = value.split("/")
-        if (parts.length !== 2)
-            return qsTr("Unknown")
-        const numerator = Number(parts[0])
-        const denominator = Number(parts[1])
-        if (!isFinite(numerator) || !isFinite(denominator)
-                || numerator <= 0 || denominator <= 0)
-            return qsTr("Unknown")
-        return qsTr("%1 fps").arg((numerator / denominator).toFixed(3))
-    }
-
-    MediaProbe {
-        id: mediaProbe
-        executablePath: executableField.text
-    }
-
     FileDialog {
-        id: mediaDialog
-        title: qsTr("Select a media file")
+        id: openDialog
+        title: qsTr("Open a file for inspection")
         fileMode: FileDialog.OpenFile
-        onAccepted: {
-            if (!mediaProbe.busy) {
-                window.selectedMediaFile = selectedFile
-                mediaProbe.probe(selectedFile)
+        onAccepted: workspaceModel.openFile(selectedFile)
+    }
+    FileDialog {
+        id: addDialog
+        title: qsTr("Add files to preparation")
+        fileMode: FileDialog.OpenFiles
+        onAccepted: workspaceModel.addFiles(selectedFiles)
+    }
+    FolderDialog {
+        id: inputFolderDialog
+        title: qsTr("Add files from a directory")
+        onAccepted: workspaceModel.addFolder(selectedFolder)
+    }
+
+    header: ToolBar {
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 10
+            anchors.rightMargin: 10
+            Button { text: qsTr("Open"); onClicked: openDialog.open() }
+            Button { text: qsTr("Add files"); onClicked: addDialog.open() }
+            Button { text: qsTr("Add directory"); onClicked: inputFolderDialog.open() }
+            Item { Layout.fillWidth: true }
+            Label { text: workspaceModel.busy ? qsTr("Analyzing files…") : "" }
+            BusyIndicator {
+                Layout.preferredWidth: 28
+                Layout.preferredHeight: 28
+                visible: workspaceModel.busy
+                running: workspaceModel.busy
             }
         }
     }
 
-    ScrollView {
-        id: scroll
+    GridLayout {
         anchors.fill: parent
-        anchors.margins: 24
-        contentWidth: availableWidth
-
-        ColumnLayout {
-            width: scroll.availableWidth
-            spacing: 16
-
-            Label {
-                text: qsTr("Media information")
-                font.pixelSize: 26
-            }
-
-            Label {
-                text: qsTr("Full path to ffprobe (without quotes)")
-            }
-
-            TextField {
-                id: executableField
-                Layout.fillWidth: true
-                // Development default; the user can still select another installation.
-                text: "C:/ffmpeg/bin/ffprobe.exe"
-                placeholderText: qsTr("For example: C:/FFmpeg/bin/ffprobe.exe")
-                enabled: !mediaProbe.busy
-                selectByMouse: true
-            }
-
-            RowLayout {
-                Button {
-                    text: qsTr("Select media file…")
-                    enabled: !mediaProbe.busy
-                             && executableField.text.trim().length > 0
-                    onClicked: mediaDialog.open()
-                }
-
-                Button {
-                    text: qsTr("Analyze again")
-                    enabled: !mediaProbe.busy
-                             && executableField.text.trim().length > 0
-                             && window.selectedMediaFile.toString().length > 0
-                    onClicked: mediaProbe.probe(window.selectedMediaFile)
-                }
-
-                BusyIndicator {
-                    running: mediaProbe.busy
-                    visible: running
-                    Layout.preferredWidth: 32
-                    Layout.preferredHeight: 32
-                }
-            }
-
-            Label {
-                Layout.fillWidth: true
-                visible: mediaProbe.sourcePath.length > 0
-                text: mediaProbe.sourcePath
-                textFormat: Text.PlainText
-                wrapMode: Text.WrapAnywhere
-            }
-
-            Label {
-                Layout.fillWidth: true
-                visible: mediaProbe.busy
-                text: qsTr("Analyzing file…")
-            }
-
-            Label {
-                Layout.fillWidth: true
-                visible: mediaProbe.error.length > 0
-                text: mediaProbe.error
-                textFormat: Text.PlainText
-                color: "#b3261e"
-                wrapMode: Text.WrapAnywhere
-            }
-
-            ConversionForm {
-                id: conversionForm
-                Layout.fillWidth: true
-                visible: mediaProbe.metadata.format !== undefined
-                enabled: !mediaProbe.busy
-                queue: conversionQueue
-                inputFile: window.selectedMediaFile
-                durationSeconds: mediaProbe.metadata.format
-                                 ? Number(mediaProbe.metadata.format.duration) : 0
-            }
-
-            QueuePanel {
-                Layout.fillWidth: true
-                queue: conversionQueue
-                visible: conversionQueue.count > 0
-            }
-
-            ColumnLayout {
-                Layout.fillWidth: true
-                visible: mediaProbe.metadata.format !== undefined
-                spacing: 12
-
-                Label {
-                    Layout.fillWidth: true
-                    text: qsTr("Container: %1").arg(window.valueOrUnknown(
-                        mediaProbe.metadata.format
-                        ? mediaProbe.metadata.format.format_name : undefined))
-                    textFormat: Text.PlainText
-                    wrapMode: Text.WordWrap
-                }
-
-                Label {
-                    text: qsTr("Duration: %1").arg(window.durationText(
-                        mediaProbe.metadata.format
-                        ? mediaProbe.metadata.format.duration : undefined))
-                }
-
-                Label {
-                    text: qsTr("Streams")
-                    font.bold: true
-                }
-
-                Repeater {
-                    model: mediaProbe.metadata.streams || []
-
-                    delegate: Frame {
-                        id: streamFrame
-                        required property var modelData
-                        Layout.fillWidth: true
-
-                        ColumnLayout {
-                            anchors.fill: parent
-
-                            Label {
-                                Layout.fillWidth: true
-                                text: qsTr("Stream #%1 — %2 — %3")
-                                    .arg(window.valueOrUnknown(streamFrame.modelData.index))
-                                    .arg(window.valueOrUnknown(streamFrame.modelData.codec_type))
-                                    .arg(window.valueOrUnknown(streamFrame.modelData.codec_name))
-                                textFormat: Text.PlainText
-                                wrapMode: Text.WordWrap
-                            }
-
-                            Label {
-                                Layout.fillWidth: true
-                                visible: streamFrame.modelData.codec_type === "video"
-                                text: qsTr("Resolution: %1 × %2; average frame rate: %3")
-                                    .arg(window.valueOrUnknown(streamFrame.modelData.width))
-                                    .arg(window.valueOrUnknown(streamFrame.modelData.height))
-                                    .arg(window.frameRateText(streamFrame.modelData.avg_frame_rate))
-                                wrapMode: Text.WordWrap
-                            }
-
-                            Label {
-                                Layout.fillWidth: true
-                                visible: streamFrame.modelData.codec_type === "audio"
-                                text: qsTr("Sample rate: %1 Hz; channels: %2")
-                                    .arg(window.valueOrUnknown(streamFrame.modelData.sample_rate))
-                                    .arg(window.valueOrUnknown(streamFrame.modelData.channels))
-                                wrapMode: Text.WordWrap
-                            }
-                        }
-                    }
-                }
-            }
+        anchors.margins: 12
+        columns: 2
+        columnSpacing: 12
+        rowSpacing: 12
+        InspectorPanel {
+            Layout.row: 0
+            Layout.column: 0
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredWidth: 1
+            Layout.preferredHeight: 360
+            Layout.minimumWidth: 0
+            workspace: workspaceModel
+        }
+        QueuePanel {
+            Layout.row: 0
+            Layout.column: 1
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredWidth: 1
+            Layout.preferredHeight: 360
+            Layout.minimumWidth: 0
+            queue: conversionQueue
+        }
+        MatrixPanel {
+            Layout.row: 1
+            Layout.column: 0
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredHeight: 500
+            Layout.minimumWidth: 0
+            workspace: workspaceModel
+            queue: conversionQueue
         }
     }
 }

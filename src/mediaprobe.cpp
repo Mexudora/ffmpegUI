@@ -65,7 +65,7 @@ QVariantMap MediaProbe::metadata() const
 
 void MediaProbe::probe(const QUrl &fileUrl)
 {
-    // This stage supports one analysis at a time; conversion queues come later.
+    // The workspace serializes probe requests independently of conversion jobs.
     if (m_busy)
         return;
 
@@ -77,19 +77,19 @@ void MediaProbe::probe(const QUrl &fileUrl)
     emit sourcePathChanged();
 
     if (!fileUrl.isLocalFile()) {
-        setError(tr("Select a local media file."));
+        finishFailure(tr("Select a local media file."));
         return;
     }
 
     const QFileInfo source(m_sourcePath);
     if (!source.isFile() || !source.isReadable()) {
-        setError(tr("The selected media file is unavailable or unreadable."));
+        finishFailure(tr("The selected media file is unavailable or unreadable."));
         return;
     }
 
     const QFileInfo executable(m_executablePath.trimmed());
     if (!executable.isAbsolute() || !executable.isFile()) {
-        setError(tr("Enter the full path to the ffprobe executable, without quotes."));
+        finishFailure(tr("Enter the full path to the ffprobe executable, without quotes."));
         return;
     }
 
@@ -101,7 +101,9 @@ void MediaProbe::probe(const QUrl &fileUrl)
         QStringLiteral("-show_entries"),
         QStringLiteral("format=format_name,duration:"
                        "stream=index,codec_type,codec_name,width,height,"
-                       "avg_frame_rate,sample_rate,channels"),
+                       "avg_frame_rate,sample_rate,channels:"
+                       "stream_tags=title,language:"
+                       "stream_disposition=default,forced,attached_pic"),
         QStringLiteral("-i"), source.absoluteFilePath()
     };
 
@@ -142,6 +144,7 @@ void MediaProbe::handleFinished(int exitCode, QProcess::ExitStatus exitStatus)
     m_metadata = root.toVariantMap();
     emit metadataChanged();
     setBusy(false);
+    emit completed(true);
 }
 
 void MediaProbe::setBusy(bool busy)
@@ -166,4 +169,5 @@ void MediaProbe::finishFailure(const QString &message)
 {
     setError(message);
     setBusy(false);
+    emit completed(false);
 }
