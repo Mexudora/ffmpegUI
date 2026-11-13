@@ -65,7 +65,7 @@ signals:
 private:
     void rebuild();
 
-    QString m_executablePath = QStringLiteral("C:/ffmpeg/bin/ffmpeg.exe");
+    QString m_executablePath;
     QUrl m_inputFile;
     QUrl m_outputFile;
     QString m_container = QStringLiteral("mp4");

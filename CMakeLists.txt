@@ -41,6 +41,8 @@ set_source_files_properties(qml/InspectorPanel.qml PROPERTIES
     QT_RESOURCE_ALIAS InspectorPanel.qml)
 set_source_files_properties(qml/CommandPreviewWindow.qml PROPERTIES
     QT_RESOURCE_ALIAS CommandPreviewWindow.qml)
+set_source_files_properties(qml/SettingsDialog.qml PROPERTIES
+    QT_RESOURCE_ALIAS SettingsDialog.qml)
 
 qt_add_qml_module(ffmpegui
     URI FFmpegUI
@@ -53,6 +55,7 @@ qt_add_qml_module(ffmpegui
         qml/InspectorPanel.qml
         qml/CommandPreviewWindow.qml
         qml/MatrixPanel.qml
+        qml/SettingsDialog.qml
     SOURCES
         src/mediaprobe.h
         src/conversioncommand.h
@@ -60,12 +63,14 @@ qt_add_qml_module(ffmpegui
         src/conversionjob.h
         src/conversionqueue.h
         src/mediaworkspace.h
+        src/toolsettings.h
         src/mediaprobe.cpp
         src/conversioncommand.cpp
         src/conversionrunner.cpp
         src/conversionjob.cpp
         src/conversionqueue.cpp
         src/mediaworkspace.cpp
+        src/toolsettings.cpp
 )
 
 # перевод

@@ -16,6 +16,13 @@ ApplicationWindow {
     MediaWorkspace { id: workspaceModel }
     ConversionQueue { id: conversionQueue }
 
+    SettingsDialog {
+        id: applicationSettings
+        parent: Overlay.overlay
+        tools: workspaceModel.tools
+        analysisBusy: workspaceModel.busy
+    }
+
     onClosing: function(close) {
         if (conversionQueue.running || conversionQueue.busy) {
             close.accepted = false
@@ -50,6 +57,7 @@ ApplicationWindow {
             Button { text: qsTr("Open"); onClicked: openDialog.open() }
             Button { text: qsTr("Add files"); onClicked: addDialog.open() }
             Button { text: qsTr("Add directory"); onClicked: inputFolderDialog.open() }
+            Button { text: qsTr("Settings"); onClicked: applicationSettings.open() }
             Item { Layout.fillWidth: true }
             Label { text: workspaceModel.busy ? qsTr("Analyzing files…") : "" }
             BusyIndicator {

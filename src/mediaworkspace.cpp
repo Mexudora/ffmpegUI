@@ -33,10 +33,27 @@ QString outputName(const QString &path, const QString &container)
 }
 }
 
-MediaWorkspace::MediaWorkspace(QObject *parent) : QObject(parent), m_probe(this)
+MediaWorkspace::MediaWorkspace(QObject *parent) : QObject(parent), m_tools(this), m_probe(this)
 {
-    m_probe.setExecutablePath(QStringLiteral("C:/ffmpeg/bin/ffprobe.exe"));
     connect(&m_probe, &MediaProbe::completed, this, &MediaWorkspace::probeCompleted);
+    connect(&m_tools, &ToolSettings::directoryChanged, this, [this]() {
+        if (!m_lastToolsError.isEmpty() && m_error == m_lastToolsError) {
+            m_error.clear();
+            emit statusChanged();
+        }
+        m_lastToolsError.clear();
+    });
+}
+
+ToolSettings *MediaWorkspace::tools() { return &m_tools; }
+bool MediaWorkspace::requireTools()
+{
+    const QString issue = m_tools.validationError();
+    if (issue.isEmpty()) return true;
+    m_lastToolsError = issue;
+    m_error = issue;
+    emit statusChanged();
+    return false;
 }
 
 int MediaWorkspace::count() const { return int(m_files.size()); }
@@ -94,6 +111,7 @@ int MediaWorkspace::findStagedPath(const QString &path) const
 
 void MediaWorkspace::openFile(const QUrl &url)
 {
+    if (!requireTools()) return;
     if (!url.isLocalFile()) {
         m_error = tr("Choose a local file.");
         emit statusChanged();
@@ -116,6 +134,7 @@ void MediaWorkspace::openFile(const QUrl &url)
 
 void MediaWorkspace::addFiles(const QList<QUrl> &urls)
 {
+    if (!requireTools()) return;
     m_error.clear();
     int added = 0;
     for (const QUrl &url : urls) {
@@ -153,6 +172,7 @@ void MediaWorkspace::addFiles(const QList<QUrl> &urls)
 
 void MediaWorkspace::addFolder(const QUrl &url)
 {
+    if (!requireTools()) return;
     if (!url.isLocalFile() || !QFileInfo(url.toLocalFile()).isDir()) {
         m_error = tr("Choose an existing local directory.");
         emit statusChanged();
@@ -204,6 +224,7 @@ void MediaWorkspace::dispatchProbe()
         m_activeId = request.id;
         m_processing = true;
         emit statusChanged();
+        m_probe.setExecutablePath(m_tools.ffprobePath());
         m_probe.probe(QUrl::fromLocalFile(request.path));
         return;
     }
@@ -472,7 +493,7 @@ ConversionJob MediaWorkspace::jobFor(const MediaFile &file, const QString &outpu
     ConversionJob job;
     job.inputPath = file.path;
     job.outputPath = output;
-    job.program = QStringLiteral("C:/ffmpeg/bin/ffmpeg.exe");
+    job.program = m_tools.ffmpegPath();
     job.container = m_container;
     job.durationSeconds = file.metadata.value(QStringLiteral("format")).toMap()
         .value(QStringLiteral("duration")).toDouble();
@@ -499,6 +520,7 @@ ConversionJob MediaWorkspace::jobFor(const MediaFile &file, const QString &outpu
 
 bool MediaWorkspace::enqueue(ConversionQueue *queue)
 {
+    if (!requireTools()) return false;
     m_error.clear();
     if (!queue || m_files.isEmpty()) m_error = tr("Add files to the preparation set first.");
     else if (busy()) m_error = tr("Wait until file analysis has finished.");

@@ -2,6 +2,7 @@
 
 #include "conversionqueue.h"
 #include "mediaprobe.h"
+#include "toolsettings.h"
 
 #include <QHash>
 #include <QList>
@@ -16,6 +17,7 @@ class MediaWorkspace : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
+    Q_PROPERTY(ToolSettings *tools READ tools CONSTANT)
     Q_PROPERTY(QVariantList files READ files NOTIFY filesChanged)
     Q_PROPERTY(int count READ count NOTIFY filesChanged)
     Q_PROPERTY(QVariantList rows READ rows NOTIFY rowsChanged)
@@ -32,6 +34,7 @@ class MediaWorkspace : public QObject
 
 public:
     explicit MediaWorkspace(QObject *parent = nullptr);
+    ToolSettings *tools();
     QVariantList files() const;
     int count() const;
     QVariantList rows() const;
@@ -92,6 +95,7 @@ private:
     };
     struct Request { QString id, path; };
 
+    bool requireTools();
     MediaFile *findFile(const QString &id);
     const MediaFile *findFile(const QString &id) const;
     int findStagedPath(const QString &path) const;
@@ -114,8 +118,10 @@ private:
     QString m_outputPath;
     bool m_outputDirectory = true;
     QString m_error, m_message;
+    QString m_lastToolsError;
     QQueue<Request> m_requests;
     QString m_activeId;
     bool m_processing = false;
+    ToolSettings m_tools;
     MediaProbe m_probe;
 };

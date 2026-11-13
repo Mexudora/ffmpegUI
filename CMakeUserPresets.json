@@ -8,6 +8,14 @@
             "cacheVariables": {
                 "CMAKE_PREFIX_PATH": "C:/Qt/Qt693/6.9.3/msvc2022_64"
             }
+        },
+        {
+            "name": "local-release",
+            "displayName": "Local Qt 6.9.3 — Release",
+            "inherits": "qt-release",
+            "cacheVariables": {
+                "CMAKE_PREFIX_PATH": "C:/Qt/Qt693/6.9.3/msvc2022_64"
+            }
         }
     ],
     "buildPresets": [
@@ -20,6 +28,13 @@
             "name": "local-update-translations",
             "configurePreset": "local-debug",
             "targets": ["update_translations"]
+        },
+        {
+            "name": "local-release",
+            "configurePreset": "local-release",
+            "targets": [
+                "ffmpegui"
+            ]
         }
     ]
 }

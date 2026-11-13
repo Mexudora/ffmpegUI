@@ -10,8 +10,9 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    QCoreApplication::setOrganizationName(QStringLiteral("ffmpegUI"));
     QCoreApplication::setApplicationName(QStringLiteral("ffmpegUI"));
-    QCoreApplication::setApplicationVersion(QStringLiteral("0.1.0"));
+    QCoreApplication::setApplicationVersion(QStringLiteral("0.1.0-alpha.1"));
 
     // The translator must outlive the QML engine and be installed before loading QML.
     QTranslator translator;

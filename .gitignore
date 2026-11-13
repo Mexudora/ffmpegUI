@@ -3,3 +3,5 @@
 *qm
 *.user
 *.user.*
+/dist/
+*.ps1

@@ -99,6 +99,10 @@
             <source>Open a file for inspection</source>
             <translation>Открыть файл для просмотра</translation>
         </message>
+        <message>
+            <source>Settings</source>
+            <translation>Настройки</translation>
+        </message>
     </context>
     <context>
         <name>main</name>
@@ -746,6 +750,64 @@
         <message>
             <source>FFmpeg command — PowerShell</source>
             <translation>Команда FFmpeg — PowerShell</translation>
+        </message>
+    </context>
+    <context>
+        <name>ToolSettings</name>
+        <message>
+            <source>Select the FFmpeg directory in Settings first.</source>
+            <translation>Сначала укажите папку FFmpeg в настройках.</translation>
+        </message>
+        <message>
+            <source>Choose an existing absolute directory path.</source>
+            <translation>Укажите абсолютный путь к существующей папке.</translation>
+        </message>
+        <message>
+            <source>The directory must contain a readable %1 file.</source>
+            <translation>В папке должен находиться доступный для чтения файл %1.</translation>
+        </message>
+        <message>
+            <source>Could not save settings. Check access permissions.</source>
+            <translation>Не удалось сохранить настройки. Проверьте права доступа.</translation>
+        </message>
+    </context>
+    <context>
+        <name>SettingsDialog</name>
+        <message>
+            <source>Settings</source>
+            <translation>Настройки</translation>
+        </message>
+        <message>
+            <source>Select the folder containing ffmpeg.exe and ffprobe.exe</source>
+            <translation>Выберите папку с ffmpeg.exe и ffprobe.exe</translation>
+        </message>
+        <message>
+            <source>FFmpeg directory</source>
+            <translation>Папка FFmpeg</translation>
+        </message>
+        <message>
+            <source>For example: C:/ffmpeg/bin</source>
+            <translation>Например: C:/ffmpeg/bin</translation>
+        </message>
+        <message>
+            <source>Choose…</source>
+            <translation>Выбрать…</translation>
+        </message>
+        <message>
+            <source>Select a directory containing both executables. FFmpeg is installed separately. Existing queue jobs keep their saved executable path.</source>
+            <translation>Укажите папку с обоими исполняемыми файлами. FFmpeg устанавливается отдельно. Задания в очереди сохраняют прежний путь к инструменту.</translation>
+        </message>
+        <message>
+            <source>Wait until file analysis has finished before changing the directory.</source>
+            <translation>Перед изменением папки дождитесь завершения анализа файлов.</translation>
+        </message>
+        <message>
+            <source>Save</source>
+            <translation>Сохранить</translation>
+        </message>
+        <message>
+            <source>Cancel</source>
+            <translation>Отмена</translation>
         </message>
     </context>
 </TS>
