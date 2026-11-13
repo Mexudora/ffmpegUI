@@ -16,6 +16,18 @@ ApplicationWindow {
 
     property url selectedMediaFile
 
+    ConversionQueue {
+        id: conversionQueue
+    }
+
+    onClosing: function(close) {
+        if (conversionQueue.running || conversionQueue.busy) {
+            close.accepted = false
+            conversionQueue.requestStopAfterCurrent()
+            conversionQueue.cancelCurrent()
+        }
+    }
+
     function valueOrUnknown(value) {
         return value === undefined || value === null || value === ""
                 ? qsTr("Unknown") : String(value)
@@ -53,8 +65,10 @@ ApplicationWindow {
         title: qsTr("Select a media file")
         fileMode: FileDialog.OpenFile
         onAccepted: {
-            window.selectedMediaFile = selectedFile
-            mediaProbe.probe(selectedFile)
+            if (!mediaProbe.busy) {
+                window.selectedMediaFile = selectedFile
+                mediaProbe.probe(selectedFile)
+            }
         }
     }
 
@@ -90,7 +104,8 @@ ApplicationWindow {
             RowLayout {
                 Button {
                     text: qsTr("Select media file…")
-                    enabled: !mediaProbe.busy && executableField.text.trim().length > 0
+                    enabled: !mediaProbe.busy
+                             && executableField.text.trim().length > 0
                     onClicked: mediaDialog.open()
                 }
 
@@ -134,10 +149,20 @@ ApplicationWindow {
             }
 
             ConversionForm {
+                id: conversionForm
                 Layout.fillWidth: true
                 visible: mediaProbe.metadata.format !== undefined
                 enabled: !mediaProbe.busy
+                queue: conversionQueue
                 inputFile: window.selectedMediaFile
+                durationSeconds: mediaProbe.metadata.format
+                                 ? Number(mediaProbe.metadata.format.duration) : 0
+            }
+
+            QueuePanel {
+                Layout.fillWidth: true
+                queue: conversionQueue
+                visible: conversionQueue.count > 0
             }
 
             ColumnLayout {

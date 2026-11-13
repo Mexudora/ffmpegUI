@@ -7,10 +7,20 @@ import FFmpegUI
 ColumnLayout {
     id: form
     property alias inputFile: conversion.inputFile
+    property real durationSeconds: 0
+    required property ConversionQueue queue
     spacing: 12
 
     ConversionCommand {
         id: conversion
+    }
+
+    Connections {
+        target: form.queue.runner
+        function onCompleted(state) {
+            // Recheck the current draft; never restore settings from the completed job.
+            conversion.refresh()
+        }
     }
 
     FileDialog {
@@ -67,6 +77,15 @@ ColumnLayout {
             model: ["AAC", qsTr("Copy without re-encoding")]
             onActivated: conversion.audioCodec = currentIndex === 0 ? "aac" : "copy"
         }
+
+        Label { text: qsTr("Audio bitrate, kbit/s") }
+        ComboBox {
+            Layout.fillWidth: true
+            model: [64, 96, 128, 160, 192, 256, 320]
+            currentIndex: 4
+            enabled: conversion.audioCodec !== "copy"
+            onActivated: conversion.audioBitrateKbps = Number(currentText)
+        }
     }
 
     Label {
@@ -85,10 +104,18 @@ ColumnLayout {
 
         TextField {
             Layout.fillWidth: true
-            readOnly: true
+            id: outputField
             selectByMouse: true
-            text: conversion.outputPath
-            placeholderText: qsTr("Choose a new file with the selected container extension")
+            onTextEdited: conversion.outputPath = text
+
+            Binding {
+                target: outputField
+                property: "text"
+                value: conversion.outputPath
+                when: !outputField.activeFocus
+                restoreMode: Binding.RestoreNone
+            }
+            placeholderText: qsTr("Edit the output path or choose a file")
         }
 
         Button {
@@ -125,5 +152,19 @@ ColumnLayout {
         text: qsTr("Copy command")
         enabled: conversion.valid
         onClicked: conversion.copyPreview()
+    }
+
+    Button {
+        text: qsTr("Add job to queue")
+        enabled: conversion.valid
+        onClicked: form.queue.enqueue(conversion, form.durationSeconds)
+    }
+
+    Label {
+        Layout.fillWidth: true
+        visible: form.queue.error.length > 0
+        text: form.queue.error
+        textFormat: Text.PlainText
+        wrapMode: Text.WordWrap
     }
 }

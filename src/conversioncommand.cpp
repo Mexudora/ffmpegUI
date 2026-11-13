@@ -5,12 +5,17 @@
 #include <QFileInfo>
 #include <QGuiApplication>
 
+#include <cmath>
+
 namespace {
 
-QString comparablePath(const QFileInfo &file)
+QUrl withExtension(const QString &path, const QString &extension)
 {
-    const QString canonical = file.canonicalFilePath();
-    return canonical.isEmpty() ? QDir::cleanPath(file.absoluteFilePath()) : canonical;
+    const QFileInfo file(path);
+    QString stem = file.completeBaseName();
+    if (stem.isEmpty())
+        stem = file.fileName();
+    return QUrl::fromLocalFile(file.dir().filePath(stem + QLatin1Char('.') + extension));
 }
 
 QString quoteForPowerShell(QString value)
@@ -38,6 +43,7 @@ QString ConversionCommand::outputPath() const { return m_outputFile.toLocalFile(
 QString ConversionCommand::container() const { return m_container; }
 QString ConversionCommand::videoCodec() const { return m_videoCodec; }
 QString ConversionCommand::audioCodec() const { return m_audioCodec; }
+int ConversionCommand::audioBitrateKbps() const { return m_audioBitrateKbps; }
 bool ConversionCommand::valid() const { return m_error.isEmpty() && !m_arguments.isEmpty(); }
 QString ConversionCommand::error() const { return m_error; }
 QString ConversionCommand::program() const { return m_program; }
@@ -58,16 +64,19 @@ void ConversionCommand::setInputFile(const QUrl &url)
     if (m_inputFile == url)
         return;
     m_inputFile = url;
-    // A destination chosen for a previous source must not silently carry over.
-    m_outputFile = QUrl();
+    m_outputFile = url.isLocalFile()
+        ? withExtension(url.toLocalFile(), m_container) : QUrl();
     rebuild();
     emit optionsChanged();
 }
 
 void ConversionCommand::setOutputFile(const QUrl &url)
 {
-    if (m_outputFile == url)
+    if (m_outputFile == url) {
+        // The file may have been removed since the previous validation.
+        rebuild();
         return;
+    }
     m_outputFile = url;
     rebuild();
     emit optionsChanged();
@@ -78,6 +87,8 @@ void ConversionCommand::setContainer(const QString &container)
     if (m_container == container)
         return;
     m_container = container;
+    if (m_outputFile.isLocalFile())
+        m_outputFile = withExtension(m_outputFile.toLocalFile(), m_container);
     rebuild();
     emit optionsChanged();
 }
@@ -100,50 +111,35 @@ void ConversionCommand::setAudioCodec(const QString &codec)
     emit optionsChanged();
 }
 
-QString ConversionCommand::validationError() const
+void ConversionCommand::setOutputPath(const QString &path)
 {
-    if (!m_inputFile.isLocalFile())
-        return tr("Select a local input file.");
+    setOutputFile(path.isEmpty() ? QUrl()
+        : QUrl::fromLocalFile(QDir::fromNativeSeparators(path)));
+}
 
-    const QFileInfo input(m_inputFile.toLocalFile());
-    if (!input.isFile() || !input.isReadable())
-        return tr("The input file is unavailable or unreadable.");
+void ConversionCommand::setAudioBitrateKbps(int bitrate)
+{
+    if (m_audioBitrateKbps == bitrate)
+        return;
+    m_audioBitrateKbps = bitrate;
+    rebuild();
+    emit optionsChanged();
+}
 
-    if (!m_outputFile.isLocalFile())
-        return tr("Choose an output file.");
-
-    const QFileInfo output(m_outputFile.toLocalFile());
-    if (!output.isAbsolute() || output.fileName().isEmpty())
-        return tr("Choose a full path for the output file.");
-
-#ifdef Q_OS_WIN
-    constexpr Qt::CaseSensitivity pathCase = Qt::CaseInsensitive;
-#else
-    constexpr Qt::CaseSensitivity pathCase = Qt::CaseSensitive;
-#endif
-    if (QString::compare(comparablePath(input), comparablePath(output), pathCase) == 0)
-        return tr("Input and output must be different files.");
-
-    if (output.exists() || output.isSymLink())
-        return tr("The output file already exists. Choose a new name.");
-    if (!output.dir().exists())
-        return tr("The output directory does not exist.");
-
-    if (m_container != QStringLiteral("mp4") && m_container != QStringLiteral("mkv"))
-        return tr("Unsupported container. Choose MP4 or MKV.");
-    if (output.suffix().compare(m_container, Qt::CaseInsensitive) != 0)
-        return tr("The output file extension must be .%1.").arg(m_container);
-
-    if (m_videoCodec != QStringLiteral("copy") && m_videoCodec != QStringLiteral("libx264"))
-        return tr("Unsupported video mode.");
-    if (m_audioCodec != QStringLiteral("copy") && m_audioCodec != QStringLiteral("aac"))
-        return tr("Unsupported audio mode.");
-
-    const QFileInfo executable(m_executablePath.trimmed());
-    if (!executable.isAbsolute() || !executable.isFile())
-        return tr("The ffmpeg executable was not found. Check its full path.");
-
-    return {};
+ConversionJob ConversionCommand::createJob(double durationSeconds) const
+{
+    ConversionJob job;
+    job.inputPath = m_inputFile.isLocalFile() ? m_inputFile.toLocalFile() : QString();
+    job.outputPath = m_outputFile.isLocalFile() ? m_outputFile.toLocalFile() : QString();
+    job.program = m_executablePath.trimmed();
+    job.container = m_container;
+    job.durationSeconds = std::isfinite(durationSeconds) && durationSeconds > 0
+        ? durationSeconds : 0;
+    job.streams = {
+        {QStringLiteral("video"), QStringLiteral("0:V:0?"), m_videoCodec, 0},
+        {QStringLiteral("audio"), QStringLiteral("0:a:0?"), m_audioCodec, m_audioBitrateKbps}
+    };
+    return job;
 }
 
 void ConversionCommand::rebuild()
@@ -152,22 +148,12 @@ void ConversionCommand::rebuild()
     m_program.clear();
     m_arguments.clear();
     m_commandPreview.clear();
-    m_error = validationError();
+    const ConversionJob job = createJob(0);
+    m_error = job.validationError();
 
     if (m_error.isEmpty()) {
-        m_program = QFileInfo(m_executablePath.trimmed()).absoluteFilePath();
-        m_arguments = {
-            QStringLiteral("-hide_banner"),
-            QStringLiteral("-n"),
-            QStringLiteral("-i"), QFileInfo(m_inputFile.toLocalFile()).absoluteFilePath(),
-            QStringLiteral("-map"), QStringLiteral("0:V:0?"),
-            QStringLiteral("-map"), QStringLiteral("0:a:0?"),
-            QStringLiteral("-c:v"), m_videoCodec,
-            QStringLiteral("-c:a"), m_audioCodec,
-            QStringLiteral("-f"), m_container == QStringLiteral("mkv")
-                ? QStringLiteral("matroska") : QStringLiteral("mp4"),
-            QFileInfo(m_outputFile.toLocalFile()).absoluteFilePath()
-        };
+        m_program = job.program;
+        m_arguments = job.arguments();
 
         // Rendering is separate from the unquoted arguments used by QProcess later.
         QStringList tokens {quoteForPowerShell(m_program)};
@@ -185,4 +171,10 @@ void ConversionCommand::copyPreview() const
         if (QClipboard *clipboard = QGuiApplication::clipboard())
             clipboard->setText(m_commandPreview);
     }
+}
+
+bool ConversionCommand::refresh()
+{
+    rebuild();
+    return valid();
 }

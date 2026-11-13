@@ -12,7 +12,6 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
-                "CMAKE_PREFIX_PATH": "$enc",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
         },

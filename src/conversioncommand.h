@@ -1,5 +1,7 @@
 #pragma once
 
+#include "conversionjob.h"
+
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -15,10 +17,11 @@ class ConversionCommand : public QObject
                NOTIFY optionsChanged)
     Q_PROPERTY(QUrl inputFile READ inputFile WRITE setInputFile NOTIFY optionsChanged)
     Q_PROPERTY(QUrl outputFile READ outputFile WRITE setOutputFile NOTIFY optionsChanged)
-    Q_PROPERTY(QString outputPath READ outputPath NOTIFY optionsChanged)
+    Q_PROPERTY(QString outputPath READ outputPath WRITE setOutputPath NOTIFY optionsChanged)
     Q_PROPERTY(QString container READ container WRITE setContainer NOTIFY optionsChanged)
     Q_PROPERTY(QString videoCodec READ videoCodec WRITE setVideoCodec NOTIFY optionsChanged)
     Q_PROPERTY(QString audioCodec READ audioCodec WRITE setAudioCodec NOTIFY optionsChanged)
+    Q_PROPERTY(int audioBitrateKbps READ audioBitrateKbps WRITE setAudioBitrateKbps NOTIFY optionsChanged)
 
     Q_PROPERTY(bool valid READ valid NOTIFY commandChanged)
     Q_PROPERTY(QString error READ error NOTIFY commandChanged)
@@ -36,12 +39,16 @@ public:
     QUrl outputFile() const;
     void setOutputFile(const QUrl &url);
     QString outputPath() const;
+    void setOutputPath(const QString &path);
     QString container() const;
     void setContainer(const QString &container);
     QString videoCodec() const;
     void setVideoCodec(const QString &codec);
     QString audioCodec() const;
     void setAudioCodec(const QString &codec);
+    int audioBitrateKbps() const;
+    void setAudioBitrateKbps(int bitrate);
+    ConversionJob createJob(double durationSeconds) const;
 
     bool valid() const;
     QString error() const;
@@ -49,6 +56,7 @@ public:
     QStringList arguments() const;
     QString commandPreview() const;
     Q_INVOKABLE void copyPreview() const;
+    Q_INVOKABLE bool refresh();
 
 signals:
     void optionsChanged();
@@ -56,7 +64,6 @@ signals:
 
 private:
     void rebuild();
-    QString validationError() const;
 
     QString m_executablePath = QStringLiteral("C:/ffmpeg/bin/ffmpeg.exe");
     QUrl m_inputFile;
@@ -64,6 +71,7 @@ private:
     QString m_container = QStringLiteral("mp4");
     QString m_videoCodec = QStringLiteral("libx264");
     QString m_audioCodec = QStringLiteral("aac");
+    int m_audioBitrateKbps = 192;
     QString m_error;
     QString m_program;
     QStringList m_arguments;

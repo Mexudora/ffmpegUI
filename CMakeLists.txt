@@ -33,6 +33,8 @@ set_source_files_properties(qml/Main.qml PROPERTIES
     QT_RESOURCE_ALIAS Main.qml)
 set_source_files_properties(qml/ConversionForm.qml PROPERTIES
     QT_RESOURCE_ALIAS ConversionForm.qml)
+set_source_files_properties(qml/QueuePanel.qml PROPERTIES
+    QT_RESOURCE_ALIAS QueuePanel.qml)
 qt_add_qml_module(ffmpegui
     URI FFmpegUI
     VERSION 1.0
@@ -40,11 +42,18 @@ qt_add_qml_module(ffmpegui
     QML_FILES
         qml/Main.qml
         qml/ConversionForm.qml
+        qml/QueuePanel.qml
     SOURCES
         src/mediaprobe.h
         src/conversioncommand.h
+        src/conversionrunner.h
+        src/conversionjob.h
+        src/conversionqueue.h
         src/mediaprobe.cpp
-        src/conversioncommand.cpp)
+        src/conversioncommand.cpp
+        src/conversionrunner.cpp
+        src/conversionjob.cpp
+        src/conversionqueue.cpp)
 
 # перевод
 qt_add_translations(
